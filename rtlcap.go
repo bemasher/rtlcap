@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math"
 	"math/rand"
@@ -108,7 +109,7 @@ func init() {
 	flag.IntVar(&blocksize, "blocksize", 4096, "number of samples per block")
 	flag.DurationVar(&timeLimit, "duration", 0, "length of time to capture")
 	flag.Float64Var(&squelch, "squelch", 0.0, "minimum mean level a sample block must be to commit to disk")
-	flag.StringVar(&filename, "o", "samples.bin", "filename to write samples to")
+	flag.StringVar(&filename, "o", "/dev/null", "filename to write samples to")
 }
 
 func main() {
@@ -126,11 +127,21 @@ func main() {
 
 	sdr.HandleFlags()
 
-	sampleFile, err := os.Create(filename)
-	if err != nil {
-		log.Fatal("error creating output file:", err)
+	var (
+		output io.Writer
+	)
+
+	if filename == "/dev/null" {
+		output = ioutil.Discard
+	} else {
+		sampleFile, err := os.Create(filename)
+		if err != nil {
+			log.Fatal("error creating output file:", err)
+		}
+		defer sampleFile.Close()
+
+		output = sampleFile
 	}
-	defer sampleFile.Close()
 
 	var (
 		tLimit    <-chan time.Time
@@ -194,7 +205,7 @@ func main() {
 
 			bytesRead += int64(n)
 
-			_, err = sampleFile.Write(block)
+			_, err = output.Write(block)
 			if err != nil {
 				log.Fatal("Error writing sample block:", err)
 			}
