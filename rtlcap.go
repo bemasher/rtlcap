@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"math"
 	"math/rand"
@@ -13,10 +14,6 @@ import (
 	"time"
 
 	"github.com/bemasher/rtltcp"
-)
-
-const (
-	BlockSize = 1 << 12
 )
 
 type Size int64
@@ -72,6 +69,7 @@ var (
 	timeLimit time.Duration
 	squelch   float64
 	filename  string
+	blocksize int
 )
 
 // Default Magnitude Lookup Table
@@ -107,6 +105,7 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 
 	flag.Var(&size, "bytes", "number of bytes to capture")
+	flag.IntVar(&blocksize, "blocksize", 4096, "number of samples per block")
 	flag.DurationVar(&timeLimit, "duration", 0, "length of time to capture")
 	flag.Float64Var(&squelch, "squelch", 0.0, "minimum mean level a sample block must be to commit to disk")
 	flag.StringVar(&filename, "o", "samples.bin", "filename to write samples to")
@@ -144,8 +143,15 @@ func main() {
 		tLimit = time.After(timeLimit)
 	}
 
-	block := make([]byte, BlockSize)
-	mag := make([]float64, BlockSize>>1)
+	in, out := io.Pipe()
+	go func() {
+		for {
+			io.CopyN(out, sdr, 16384)
+		}
+	}()
+
+	block := make([]byte, blocksize<<1)
+	mag := make([]float64, blocksize)
 
 	lut := NewSqrtMagLUT()
 
@@ -168,7 +174,7 @@ func main() {
 				return
 			}
 
-			n, err := sdr.Read(block)
+			n, err := in.Read(block)
 			if err != nil {
 				log.Fatal("Error reading sample block:", err)
 			}
