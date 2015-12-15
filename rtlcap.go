@@ -80,7 +80,7 @@ type MagLUT []float64
 func NewSqrtMagLUT() (lut MagLUT) {
 	lut = make([]float64, 0x100)
 	for idx := range lut {
-		lut[idx] = (127.4 - float64(idx)) / 127.6
+		lut[idx] = (127.4 - float64(idx))
 		lut[idx] *= lut[idx]
 	}
 	return
@@ -185,7 +185,7 @@ func main() {
 				return
 			}
 
-			n, err := in.Read(block)
+			_, err := in.Read(block)
 			if err != nil {
 				log.Fatal("Error reading sample block:", err)
 			}
@@ -203,12 +203,11 @@ func main() {
 				continue
 			}
 
-			bytesRead += int64(n)
-
-			_, err = output.Write(block)
+			n, err := output.Write(block)
 			if err != nil {
 				log.Fatal("Error writing sample block:", err)
 			}
+			bytesRead += int64(n)
 		}
 	}
 }
