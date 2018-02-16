@@ -49,6 +49,8 @@ Usage of rtlcap:
     	address or hostname of rtl_tcp instance (default "127.0.0.1:1234")
   -squelch float
     	minimum mean level a sample block must be to commit to disk
+  -squelchlog
+    	suppress log output messages for squelched blocks
   -testmode
     	enable/disable test mode
   -tunergain float

@@ -82,11 +82,12 @@ func (s *Size) Set(value string) (err error) {
 }
 
 var (
-	size      Size
-	timeLimit time.Duration
-	squelch   float64
-	filename  string
-	blocksize int
+	size       Size
+	timeLimit  time.Duration
+	squelch    float64
+	squelchLog bool
+	filename   string
+	blocksize  int
 )
 
 // Default Magnitude Lookup Table
@@ -125,6 +126,7 @@ func init() {
 	flag.IntVar(&blocksize, "blocksize", 4096, "number of samples per block")
 	flag.DurationVar(&timeLimit, "duration", 0, "length of time to capture")
 	flag.Float64Var(&squelch, "squelch", 0.0, "minimum mean level a sample block must be to commit to disk")
+	flag.BoolVar(&squelchLog, "squelchlog", false, "suppress log output messages for squelched blocks")
 	flag.StringVar(&filename, "o", "/dev/null", "filename to write samples to")
 }
 
@@ -193,7 +195,9 @@ func main() {
 		case <-tLimit:
 			return
 		case <-meanTick:
-			log.Printf("Min: %0.3f Max: %0.3f\n", min, max)
+			if !(squelchLog && max < squelch) {
+				log.Printf("Min: %0.3f Max: %0.3f\n", min, max)
+			}
 			min = math.MaxFloat64
 			max = -math.MaxFloat64
 		default:
