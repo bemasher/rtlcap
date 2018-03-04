@@ -41,6 +41,8 @@ Usage of rtlcap:
     	filename to write samples to (default "/dev/null")
   -offsettuning
     	enable/disable offset tuning
+  -quietsquelch
+    	suppress log output messages for squelched blocks
   -rtlxtalfreq uint
     	set rtl xtal frequency
   -samplerate value
@@ -49,8 +51,6 @@ Usage of rtlcap:
     	address or hostname of rtl_tcp instance (default "127.0.0.1:1234")
   -squelch float
     	minimum mean level a sample block must be to commit to disk
-  -squelchlog
-    	suppress log output messages for squelched blocks
   -testmode
     	enable/disable test mode
   -tunergain float
