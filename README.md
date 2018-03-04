@@ -41,6 +41,8 @@ Usage of rtlcap:
     	filename to write samples to (default "/dev/null")
   -offsettuning
     	enable/disable offset tuning
+  -quietsquelch
+    	suppress log output messages for squelched blocks
   -rtlxtalfreq uint
     	set rtl xtal frequency
   -samplerate value
